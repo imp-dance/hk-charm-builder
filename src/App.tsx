@@ -242,7 +242,7 @@ function App() {
         <Section title="Build info">
           {selectedCharms.map((charm) => (
             <div key={charm} className="charm-info">
-              <img src={`/charms/${charm}.png`} />
+              <img src={`./charms/${charm}.png`} />
               <div>
                 <header>
                   <h3>{charms[charm].name}</h3>
@@ -384,7 +384,7 @@ function CharmButton(props: {
       onMouseUp={props.onMouseUp}
       style={props.style}
     >
-      <img src={`/charms/${props.charm}.png`} />
+      <img src={`./charms/${props.charm}.png`} />
     </button>
   );
 }
