@@ -1,34 +1,39 @@
 import { clsx } from "clsx";
 import { useEffect, useState } from "react";
+import ReactDOM from "react-dom";
+import { usePopper } from "react-popper";
 import "./App.css";
 import { ArrowDown } from "./ArrowDown";
 import { charm_synergies, charms } from "./charms";
 
-const charmIds = Object.keys(charms) as (keyof typeof charms)[];
+type Charm = keyof typeof charms;
+const charmIds = Object.keys(charms) as Charm[];
 const allSynergies = Object.keys(charm_synergies);
+const initialState = getURLState(
+  new URLSearchParams(window.location.search)
+);
+
+let cancelRemove = false;
 
 function App() {
   const [rejecting, setRejecting] = useState(false);
   const [tries, setTries] = useState(0);
-  const [dragItem, setDragItem] = useState<
-    keyof typeof charms | null
-  >(null);
-  const [selectedCharms, setSelectedCharms] = useState<
-    (keyof typeof charms)[]
-  >([]);
+  const [dragItem, setDragItem] = useState<Charm | null>(null);
+  const [selectedCharms, setSelectedCharms] = useState<Charm[]>(
+    initialState.charms
+  );
   const { settings, setSettings } = useSettings(
     setSelectedCharms
   );
 
   const currentNotchCost = selectedCharms.reduce(
-    (acc, charm) =>
-      acc + charms[charm as keyof typeof charms].notches,
+    (acc, charm) => acc + charms[charm as Charm].notches,
     0
   );
 
   const overcharmed = currentNotchCost > 11;
 
-  const requestAddCharm = (charm: keyof typeof charms) => {
+  const requestAddCharm = (charm: Charm) => {
     const nextNotchCost =
       charms[charm].notches + currentNotchCost;
     if (overcharmed) {
@@ -47,11 +52,18 @@ function App() {
     if (selectedCharms.includes(charm)) {
       return;
     }
-    setSelectedCharms([...selectedCharms, charm]);
+    const newCharms = [...selectedCharms, charm];
+    setSelectedCharms(newCharms);
+    setURLState(settings, newCharms);
   };
 
-  const removeCharm = (charm: keyof typeof charms) => {
-    setSelectedCharms((p) => p.filter((i) => i !== charm));
+  const removeCharm = (charm: Charm) => {
+    let newCharms = [...selectedCharms];
+    setSelectedCharms((p) => {
+      newCharms = p.filter((i) => i !== charm);
+      return newCharms;
+    });
+    setURLState(settings, newCharms);
     setTries(0);
   };
 
@@ -59,9 +71,13 @@ function App() {
     return charm_synergies[
       synergy as keyof typeof charm_synergies
     ].charms.every((charm) =>
-      selectedCharms.includes(charm as keyof typeof charms)
+      selectedCharms.includes(charm as Charm)
     );
   });
+
+  useEffect(() => {
+    setURLState(settings, selectedCharms);
+  }, [settings]);
 
   return (
     <div
@@ -129,10 +145,11 @@ function App() {
         <div
           className="charms-container"
           onMouseUp={() => {
-            if (dragItem) {
+            if (dragItem && !cancelRemove) {
               removeCharm(dragItem);
             }
             setDragItem(null);
+            cancelRemove = false;
           }}
         >
           {charmIds
@@ -148,6 +165,14 @@ function App() {
                       ? undefined
                       : setDragItem(charm)
                   }
+                  onMouseUp={(e) => {
+                    if (dragItem === charm) {
+                      cancelRemove = true;
+                      e.preventDefault();
+                      requestAddCharm(charm);
+                      setDragItem(null);
+                    }
+                  }}
                   key={charm}
                   shift={shouldShift}
                   charm={charm}
@@ -293,10 +318,7 @@ function Section(props: {
   );
 }
 
-function DragItem(props: {
-  charm: keyof typeof charms;
-  active: boolean;
-}) {
+function DragItem(props: { charm: Charm; active: boolean }) {
   const [position, setPosition] = useState({
     x: 0,
     y: 0,
@@ -363,29 +385,76 @@ function Dropzone(props: {
 }
 
 function CharmButton(props: {
-  charm: keyof typeof charms;
+  charm: Charm;
   onClick?: () => void;
   onMouseDown: () => void;
-  onMouseUp?: () => void;
+  onMouseUp?: (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => void;
   shift?: boolean;
   style?: React.CSSProperties;
 }) {
+  const [tooltipVisible, setTooltipVisible] = useState(false);
+  const [referenceElement, setReferenceElement] =
+    useState<HTMLButtonElement | null>(null);
+  const [popperElement, setPopperElement] =
+    useState<HTMLDivElement | null>(null);
+  const [arrowElement, setArrowElement] =
+    useState<HTMLDivElement | null>(null);
+  const { styles, attributes, state } = usePopper(
+    referenceElement,
+    popperElement,
+    {
+      modifiers: [
+        { name: "arrow", options: { element: arrowElement } },
+      ],
+    }
+  );
+
   return (
-    <button
-      onClick={props.onClick}
-      className={clsx(
-        "charm-button",
-        props.shift && "second-row"
+    <>
+      <button
+        ref={setReferenceElement}
+        onClick={props.onClick}
+        className={clsx(
+          "charm-button",
+          props.shift && "second-row"
+        )}
+        title={`${charms[props.charm].name}\n${
+          charms[props.charm].description
+        }`}
+        onMouseDown={props.onMouseDown}
+        onMouseUp={props.onMouseUp}
+        style={props.style}
+        onMouseOver={() => setTooltipVisible(true)}
+        onMouseLeave={() => setTooltipVisible(false)}
+      >
+        <img src={`./charms/${props.charm}.png`} />
+      </button>
+      {ReactDOM.createPortal(
+        <>
+          {tooltipVisible && (
+            <div
+              ref={setPopperElement}
+              style={styles.popper}
+              className="popper"
+              {...attributes.popper}
+            >
+              <h3>{charms[props.charm].name}</h3>
+              <p>
+                {charms[props.charm].description
+                  .split("\n")
+                  .map((l) => (
+                    <p key={l}>{l}</p>
+                  ))}
+              </p>
+              <div ref={setArrowElement} style={styles.arrow} />
+            </div>
+          )}
+        </>,
+        document.body
       )}
-      title={`${charms[props.charm].name}\n${
-        charms[props.charm].description
-      }`}
-      onMouseDown={props.onMouseDown}
-      onMouseUp={props.onMouseUp}
-      style={props.style}
-    >
-      <img src={`./charms/${props.charm}.png`} />
-    </button>
+    </>
   );
 }
 
@@ -419,16 +488,12 @@ function ActiveSynergies(props: { synergies: string[] }) {
 
 function useSettings(
   setSelectedCharms: React.Dispatch<
-    React.SetStateAction<(keyof typeof charms)[]>
+    React.SetStateAction<Charm[]>
   >
 ) {
-  const [settings, setSettings] = useState({
-    hasVoidheart: true,
-    hasUnbreakableStrength: true,
-    hasUnbreakableHeart: true,
-    hasUnbreakableGreed: true,
-    banishedGrimm: false,
-  });
+  const [settings, setSettings] = useState(
+    initialState.settings
+  );
 
   useEffect(() => {
     if (settings.hasVoidheart) {
@@ -489,8 +554,87 @@ function useSettings(
   };
 }
 
+function getURLState(params: URLSearchParams) {
+  const save = params.get("save");
+
+  if (!save) {
+    return {
+      settings: {
+        hasVoidheart: true,
+        hasUnbreakableStrength: true,
+        hasUnbreakableHeart: true,
+        hasUnbreakableGreed: true,
+        banishedGrimm: false,
+      },
+      charms: [],
+    };
+  }
+
+  const [settings, _charms] = save.split("_") ?? [];
+  const [
+    raw_hasVoidheart,
+    raw_hasUnbreakableStrength,
+    raw_hasUnbreakableHeart,
+    raw_hasUnbreakableGreed,
+    raw_banishedGrimm,
+  ] = settings?.split("") ?? [];
+
+  const charmNames =
+    _charms
+      ?.split("-")
+      .map((c) => parseInt(c))
+      .map((c) => charmIds[c]) ?? [];
+  const hasVoidheart = raw_hasVoidheart === "1";
+  const hasUnbreakableStrength =
+    raw_hasUnbreakableStrength === "1";
+  const hasUnbreakableHeart = raw_hasUnbreakableHeart === "1";
+  const hasUnbreakableGreed = raw_hasUnbreakableGreed === "1";
+  const banishedGrimm = raw_banishedGrimm === "1";
+
+  return {
+    settings: {
+      hasVoidheart,
+      hasUnbreakableStrength,
+      hasUnbreakableHeart,
+      hasUnbreakableGreed,
+      banishedGrimm,
+    },
+    charms: charmNames,
+  };
+}
+
+function setURLState(
+  settings: {
+    hasVoidheart: boolean;
+    hasUnbreakableStrength: boolean;
+    hasUnbreakableHeart: boolean;
+    hasUnbreakableGreed: boolean;
+    banishedGrimm: boolean;
+  },
+  charmNames: Charm[]
+) {
+  const params = new URLSearchParams();
+  const activeCharmIds = charmNames.map((c) =>
+    charmIds.indexOf(c)
+  );
+  const settingsString = [
+    settings.hasVoidheart ? "1" : "0",
+    settings.hasUnbreakableStrength ? "1" : "0",
+    settings.hasUnbreakableHeart ? "1" : "0",
+    settings.hasUnbreakableGreed ? "1" : "0",
+    settings.banishedGrimm ? "1" : "0",
+  ].join("");
+  params.set(
+    "save",
+    `${settingsString}_${activeCharmIds.join("-")}`
+  );
+
+  window.history.replaceState({}, "", `?${params.toString()}`);
+  return params;
+}
+
 function filter(
-  charm: keyof typeof charms,
+  charm: Charm,
   settings: {
     hasVoidheart: boolean;
     hasUnbreakableStrength: boolean;

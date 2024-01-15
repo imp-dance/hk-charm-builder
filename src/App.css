@@ -22,6 +22,7 @@
     transform: translateX(2rem);
   }
 }
+
 #app {
   padding: 1rem 2rem;
 }
@@ -57,6 +58,7 @@
   max-width: 100%;
   transform: translateX(-1rem);
   user-select: none;
+  max-width: 620px;
 }
 
 .charm-dot-empty-space {
@@ -110,6 +112,7 @@
 .notches {
   display: flex;
   gap: 0.75rem;
+  padding: 0 0.5rem;
 }
 
 .charm-dot {
@@ -214,8 +217,8 @@ label:has(input[type="checkbox"]:checked)::before {
 
 #app {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(645px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(620px, 1fr));
+  gap: 2rem;
   margin: 2rem auto;
 }
 
@@ -285,4 +288,38 @@ h3 {
 .charm-info h3 {
   font-size: 1rem;
   font-weight: bold;
+}
+
+@media screen and (max-width: 920px) {
+  .charm-button {
+    --size: 3rem;
+    padding: 0.5rem;
+  }
+  .charms-container {
+    max-width: 100%;
+  }
+}
+
+.popper {
+  background: #111;
+  padding: 1rem;
+  max-width: 400px;
+}
+
+@media screen and (max-width: 740px) {
+  .charms-container {
+    overflow-x: auto;
+    max-width: calc(100vw - 2rem);
+  }
+  .charm-button {
+    --size: 2rem;
+    padding: 0.25rem;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .charm-button {
+    --size: 1.5rem;
+    padding: 0.15rem;
+  }
 }
