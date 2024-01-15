@@ -420,9 +420,6 @@ function CharmButton(props: {
           "charm-button",
           props.shift && "second-row"
         )}
-        title={`${charms[props.charm].name}\n${
-          charms[props.charm].description
-        }`}
         onMouseDown={props.onMouseDown}
         onMouseUp={props.onMouseUp}
         style={props.style}
