@@ -401,7 +401,7 @@ function CharmButton(props: {
     useState<HTMLDivElement | null>(null);
   const [arrowElement, setArrowElement] =
     useState<HTMLDivElement | null>(null);
-  const { styles, attributes, state } = usePopper(
+  const { styles, attributes } = usePopper(
     referenceElement,
     popperElement,
     {
