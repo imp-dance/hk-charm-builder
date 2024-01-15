@@ -1,3 +1,5 @@
+import { Charm } from "./types";
+
 export const charms = {
   wayward_compass: {
     name: "Wayward Compass",
@@ -270,6 +272,8 @@ export const charms = {
     notches: 0,
   },
 };
+
+export const charmIds = Object.keys(charms) as Charm[];
 
 export const charm_synergies = {
   dashmaster_sprintmaster: {

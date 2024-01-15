@@ -18,13 +18,25 @@
   &:hover {
     background: rgba(0, 0, 0, 0.1);
   }
-  &.second-row {
-    transform: translateX(2rem);
-  }
 }
 
-#app {
-  padding: 1rem 2rem;
+.charm-button:nth-child(20n + 11),
+.charm-button:nth-child(20n + 12),
+.charm-button:nth-child(20n + 13),
+.charm-button:nth-child(20n + 14),
+.charm-button:nth-child(20n + 15),
+.charm-button:nth-child(20n + 16),
+.charm-button:nth-child(20n + 17),
+.charm-button:nth-child(20n + 18),
+.charm-button:nth-child(20n + 19),
+.charm-button:nth-child(20n + 20) {
+  transform: translateX(2rem);
+}
+
+@keyframes appIn {
+  from {
+    opacity: 0;
+  }
 }
 
 .section {
@@ -50,6 +62,25 @@
       transform: rotate(180deg);
     }
   }
+
+  & .section-inner {
+    animation: fadeInDown 0.15s ease-in-out;
+  }
+}
+
+@keyframes fadeInDown {
+  0% {
+    transform: translateY(-1rem);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+:root {
+  --charms-container-width: 640px;
 }
 
 .charms-container {
@@ -58,7 +89,7 @@
   max-width: 100%;
   transform: translateX(-1rem);
   user-select: none;
-  max-width: 620px;
+  width: 100%;
 }
 
 .charm-dot-empty-space {
@@ -216,10 +247,20 @@ label:has(input[type="checkbox"]:checked)::before {
 }
 
 #app {
+  padding: 3rem 2rem;
+  animation: appIn 0.6s ease-in-out;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(620px, 1fr));
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(var(--charms-container-width), 1fr)
+  );
+  gap: 4rem;
+}
+
+.subgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
   gap: 2rem;
-  margin: 2rem auto;
 }
 
 .stack {
@@ -238,6 +279,7 @@ h3 {
   flex-direction: row;
   gap: 0.5rem;
   align-items: center;
+  max-width: 50ch;
 
   & img {
     width: 2rem;
@@ -295,9 +337,6 @@ h3 {
     --size: 3rem;
     padding: 0.5rem;
   }
-  .charms-container {
-    max-width: 100%;
-  }
 }
 
 .popper {
@@ -309,10 +348,10 @@ h3 {
 @media screen and (max-width: 740px) {
   .charms-container {
     overflow-x: auto;
-    max-width: calc(100vw - 2rem);
   }
   .charm-button {
     --size: 2rem;
+    flex-shrink: 1;
     padding: 0.25rem;
   }
 }
@@ -321,5 +360,17 @@ h3 {
   .charm-button {
     --size: 1.5rem;
     padding: 0.15rem;
+  }
+}
+
+.settings-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-left: 1rem;
+
+  & label {
+    opacity: 0.75;
+    font-size: 0.875rem;
   }
 }

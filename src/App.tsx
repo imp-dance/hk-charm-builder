@@ -1,13 +1,16 @@
 import { clsx } from "clsx";
 import { useEffect, useState } from "react";
-import ReactDOM from "react-dom";
-import { usePopper } from "react-popper";
+import { ActiveSynergies } from "./ActiveSynergies";
 import "./App.css";
-import { ArrowDown } from "./ArrowDown";
-import { charm_synergies, charms } from "./charms";
+import { CharmButton } from "./CharmButton";
+import { Dropzone } from "./Dropzone";
+import { Section } from "./Section";
+import { Settings } from "./Settings";
+import { Stack } from "./Stack";
+import { charmIds, charm_synergies, charms } from "./charms";
+import { Charm } from "./types";
+import { getURLState, setURLState } from "./utils";
 
-type Charm = keyof typeof charms;
-const charmIds = Object.keys(charms) as Charm[];
 const allSynergies = Object.keys(charm_synergies);
 const initialState = getURLState(
   new URLSearchParams(window.location.search)
@@ -86,7 +89,7 @@ function App() {
         setDragItem(null);
       }}
     >
-      <Stack>
+      <Stack className="charms-module">
         <Dropzone
           overcharmed={overcharmed}
           rejecting={rejecting}
@@ -174,7 +177,6 @@ function App() {
                     }
                   }}
                   key={charm}
-                  shift={shouldShift}
                   charm={charm}
                   style={
                     dragItem === charm
@@ -196,74 +198,7 @@ function App() {
             })}
         </div>
       </Stack>
-      <Stack>
-        <Section title="Settings">
-          <label>
-            <input
-              type="checkbox"
-              checked={settings.hasVoidheart}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  hasVoidheart: e.target.checked,
-                })
-              }
-            />
-            Has Voidheart
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={settings.hasUnbreakableStrength}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  hasUnbreakableStrength: e.target.checked,
-                })
-              }
-            />
-            Has Unbreakable Strength
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={settings.hasUnbreakableHeart}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  hasUnbreakableHeart: e.target.checked,
-                })
-              }
-            />
-            Has Unbreakable Heart
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={settings.hasUnbreakableGreed}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  hasUnbreakableGreed: e.target.checked,
-                })
-              }
-            />
-            Has Unbreakable Greed
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={settings.banishedGrimm}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  banishedGrimm: e.target.checked,
-                })
-              }
-            />
-            Banished the Grimm Troupe
-          </label>
-        </Section>
+      <div className="subgrid">
         <Section title="Build info">
           {selectedCharms.map((charm) => (
             <div key={charm} className="charm-info">
@@ -293,27 +228,14 @@ function App() {
         <Section title="Synergies">
           <ActiveSynergies synergies={activeSynergies} />
         </Section>
-      </Stack>
+        <Section title="Settings">
+          <Settings
+            settings={settings}
+            setSettings={setSettings}
+          />
+        </Section>
+      </div>
       {dragItem !== null && <DragItem charm={dragItem} active />}
-    </div>
-  );
-}
-
-function Section(props: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  const [visible, setVisible] = useState(true);
-
-  return (
-    <div className="section">
-      <button
-        className={visible ? "open" : "collapsed"}
-        onClick={() => setVisible((p) => !p)}
-      >
-        {props.title} <ArrowDown />
-      </button>
-      {visible ? props.children : null}
     </div>
   );
 }
@@ -338,7 +260,6 @@ function DragItem(props: { charm: Charm; active: boolean }) {
   return (
     <CharmButton
       onMouseDown={() => {}}
-      shift={false}
       charm={props.charm}
       style={{
         position: "absolute",
@@ -354,135 +275,6 @@ function DragItem(props: { charm: Charm; active: boolean }) {
   );
 }
 
-function Stack(props: { children: React.ReactNode }) {
-  return <div className="stack">{props.children}</div>;
-}
-
-function Dropzone(props: {
-  onDrop: () => void;
-  children: React.ReactNode;
-  overcharmed?: boolean;
-  rejecting?: boolean;
-  onStopRejecting?: () => void;
-  notAllowed?: boolean;
-  isDragging?: boolean;
-}) {
-  return (
-    <div
-      className={clsx(
-        "dropzone",
-        props.overcharmed && "overcharmed",
-        props.rejecting && "rejecting",
-        props.notAllowed && "not-allowed",
-        props.isDragging && "dragging"
-      )}
-      onAnimationEnd={() => props.onStopRejecting?.()}
-      onMouseUp={props.onDrop}
-    >
-      {props.children}
-    </div>
-  );
-}
-
-function CharmButton(props: {
-  charm: Charm;
-  onClick?: () => void;
-  onMouseDown: () => void;
-  onMouseUp?: (
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ) => void;
-  shift?: boolean;
-  style?: React.CSSProperties;
-}) {
-  const [tooltipVisible, setTooltipVisible] = useState(false);
-  const [referenceElement, setReferenceElement] =
-    useState<HTMLButtonElement | null>(null);
-  const [popperElement, setPopperElement] =
-    useState<HTMLDivElement | null>(null);
-  const [arrowElement, setArrowElement] =
-    useState<HTMLDivElement | null>(null);
-  const { styles, attributes } = usePopper(
-    referenceElement,
-    popperElement,
-    {
-      modifiers: [
-        { name: "arrow", options: { element: arrowElement } },
-      ],
-    }
-  );
-
-  return (
-    <>
-      <button
-        ref={setReferenceElement}
-        onClick={props.onClick}
-        className={clsx(
-          "charm-button",
-          props.shift && "second-row"
-        )}
-        onMouseDown={props.onMouseDown}
-        onMouseUp={props.onMouseUp}
-        style={props.style}
-        onMouseOver={() => setTooltipVisible(true)}
-        onMouseLeave={() => setTooltipVisible(false)}
-      >
-        <img src={`./charms/${props.charm}.png`} />
-      </button>
-      {ReactDOM.createPortal(
-        <>
-          {tooltipVisible && (
-            <div
-              ref={setPopperElement}
-              style={styles.popper}
-              className="popper"
-              {...attributes.popper}
-            >
-              <h3>{charms[props.charm].name}</h3>
-              <p>
-                {charms[props.charm].description
-                  .split("\n")
-                  .map((l) => (
-                    <p key={l}>{l}</p>
-                  ))}
-              </p>
-              <div ref={setArrowElement} style={styles.arrow} />
-            </div>
-          )}
-        </>,
-        document.body
-      )}
-    </>
-  );
-}
-
-function ActiveSynergies(props: { synergies: string[] }) {
-  return (
-    <div className="synergies">
-      {props.synergies.map((synergy) => (
-        <div key={synergy}>
-          <h3>
-            {
-              charm_synergies[
-                synergy as keyof typeof charm_synergies
-              ].name
-            }
-          </h3>
-          {charm_synergies[
-            synergy as keyof typeof charm_synergies
-          ].description
-            .split("\n")
-            .map((line) => (
-              <p>{line}</p>
-            ))}
-        </div>
-      ))}
-      {props.synergies.length === 0 && (
-        <p>No synergies currently active.</p>
-      )}
-    </div>
-  );
-}
-
 function useSettings(
   setSelectedCharms: React.Dispatch<
     React.SetStateAction<Charm[]>
@@ -492,142 +284,66 @@ function useSettings(
     initialState.settings
   );
 
-  useEffect(() => {
-    if (settings.hasVoidheart) {
-      setSelectedCharms((p) =>
-        p.filter((i) => i !== "kingsoul")
-      );
-    }
-    if (!settings.hasVoidheart) {
-      setSelectedCharms((p) =>
-        p.filter((i) => i !== "void_heart")
-      );
-    }
-    if (settings.hasUnbreakableStrength) {
-      setSelectedCharms((p) =>
-        p.filter((i) => i !== "fragile_strength")
-      );
-    }
-    if (!settings.hasUnbreakableStrength) {
-      setSelectedCharms((p) =>
-        p.filter((i) => i !== "unbreakable_strength")
-      );
-    }
-    if (settings.hasUnbreakableHeart) {
-      setSelectedCharms((p) =>
-        p.filter((i) => i !== "fragile_heart")
-      );
-    }
-    if (!settings.hasUnbreakableHeart) {
-      setSelectedCharms((p) =>
-        p.filter((i) => i !== "unbreakable_heart")
-      );
-    }
-    if (settings.hasUnbreakableGreed) {
-      setSelectedCharms((p) =>
-        p.filter((i) => i !== "fragile_greed")
-      );
-    }
-    if (!settings.hasUnbreakableGreed) {
-      setSelectedCharms((p) =>
-        p.filter((i) => i !== "unbreakable_greed")
-      );
-    }
-    if (settings.banishedGrimm) {
-      setSelectedCharms((p) =>
-        p.filter((i) => i !== "grimmchild")
-      );
-    }
-    if (!settings.banishedGrimm) {
-      setSelectedCharms((p) =>
-        p.filter((i) => i !== "carefree_melody")
-      );
-    }
-  }, [settings]);
+  useEffect(
+    function consolidateCharmsWithSettings() {
+      if (settings.hasVoidheart) {
+        setSelectedCharms((p) =>
+          p.filter((i) => i !== "kingsoul")
+        );
+      }
+      if (!settings.hasVoidheart) {
+        setSelectedCharms((p) =>
+          p.filter((i) => i !== "void_heart")
+        );
+      }
+      if (settings.hasUnbreakableStrength) {
+        setSelectedCharms((p) =>
+          p.filter((i) => i !== "fragile_strength")
+        );
+      }
+      if (!settings.hasUnbreakableStrength) {
+        setSelectedCharms((p) =>
+          p.filter((i) => i !== "unbreakable_strength")
+        );
+      }
+      if (settings.hasUnbreakableHeart) {
+        setSelectedCharms((p) =>
+          p.filter((i) => i !== "fragile_heart")
+        );
+      }
+      if (!settings.hasUnbreakableHeart) {
+        setSelectedCharms((p) =>
+          p.filter((i) => i !== "unbreakable_heart")
+        );
+      }
+      if (settings.hasUnbreakableGreed) {
+        setSelectedCharms((p) =>
+          p.filter((i) => i !== "fragile_greed")
+        );
+      }
+      if (!settings.hasUnbreakableGreed) {
+        setSelectedCharms((p) =>
+          p.filter((i) => i !== "unbreakable_greed")
+        );
+      }
+      if (settings.banishedGrimm) {
+        setSelectedCharms((p) =>
+          p.filter((i) => i !== "grimmchild")
+        );
+      }
+      if (!settings.banishedGrimm) {
+        setSelectedCharms((p) =>
+          p.filter((i) => i !== "carefree_melody")
+        );
+      }
+    },
+    [settings]
+  );
 
   return {
     settings,
     setSettings,
   };
-}
-
-function getURLState(params: URLSearchParams) {
-  const save = params.get("save");
-
-  if (!save) {
-    return {
-      settings: {
-        hasVoidheart: true,
-        hasUnbreakableStrength: true,
-        hasUnbreakableHeart: true,
-        hasUnbreakableGreed: true,
-        banishedGrimm: false,
-      },
-      charms: [],
-    };
-  }
-
-  const [settings, _charms] = save.split("_") ?? [];
-  const [
-    raw_hasVoidheart,
-    raw_hasUnbreakableStrength,
-    raw_hasUnbreakableHeart,
-    raw_hasUnbreakableGreed,
-    raw_banishedGrimm,
-  ] = settings?.split("") ?? [];
-
-  const charmNames =
-    _charms
-      ?.split("-")
-      .map((c) => parseInt(c))
-      .map((c) => charmIds[c]) ?? [];
-  const hasVoidheart = raw_hasVoidheart === "1";
-  const hasUnbreakableStrength =
-    raw_hasUnbreakableStrength === "1";
-  const hasUnbreakableHeart = raw_hasUnbreakableHeart === "1";
-  const hasUnbreakableGreed = raw_hasUnbreakableGreed === "1";
-  const banishedGrimm = raw_banishedGrimm === "1";
-
-  return {
-    settings: {
-      hasVoidheart,
-      hasUnbreakableStrength,
-      hasUnbreakableHeart,
-      hasUnbreakableGreed,
-      banishedGrimm,
-    },
-    charms: charmNames,
-  };
-}
-
-function setURLState(
-  settings: {
-    hasVoidheart: boolean;
-    hasUnbreakableStrength: boolean;
-    hasUnbreakableHeart: boolean;
-    hasUnbreakableGreed: boolean;
-    banishedGrimm: boolean;
-  },
-  charmNames: Charm[]
-) {
-  const params = new URLSearchParams();
-  const activeCharmIds = charmNames.map((c) =>
-    charmIds.indexOf(c)
-  );
-  const settingsString = [
-    settings.hasVoidheart ? "1" : "0",
-    settings.hasUnbreakableStrength ? "1" : "0",
-    settings.hasUnbreakableHeart ? "1" : "0",
-    settings.hasUnbreakableGreed ? "1" : "0",
-    settings.banishedGrimm ? "1" : "0",
-  ].join("");
-  params.set(
-    "save",
-    `${settingsString}_${activeCharmIds.join("-")}`
-  );
-
-  window.history.replaceState({}, "", `?${params.toString()}`);
-  return params;
 }
 
 function filter(
