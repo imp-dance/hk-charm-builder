@@ -507,7 +507,7 @@ h3 {
   .charm-button:nth-child(10n + 8),
   .charm-button:nth-child(10n + 9),
   .charm-button:nth-child(10n + 10) {
-    transform: translateX(2rem);
+    transform: translateX(2.5rem);
   }
 }
 
