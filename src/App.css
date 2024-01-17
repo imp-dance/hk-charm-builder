@@ -18,6 +18,106 @@
   &:hover {
     background: rgba(0, 0, 0, 0.1);
   }
+  &[data-overcharmed="true"] {
+    animation: overcharmedIconAnimation 1.5s ease-in-out infinite;
+    animation-delay: calc(0.1s * var(--charm-index));
+  }
+}
+
+@keyframes overcharmedIconAnimation {
+  0% {
+    transform: translateX(0);
+  }
+  8% {
+    transform: rotate(2deg) scale(0.99);
+  }
+  13% {
+    transform: rotate(-1deg);
+  }
+  18% {
+    transform: rotate(-3deg) scale(0.99);
+  }
+  22% {
+    transform: translateX(2px) rotate(-3deg) scale(1.01);
+  }
+  25% {
+    transform: translateX(2px) rotate(-2deg) scale(1.01);
+  }
+  25% {
+    transform: translateX(2px) rotate(3deg) scale(1.01);
+  }
+  30% {
+    transform: translateX(2px) rotate(0deg);
+  }
+  32% {
+    transform: rotate(3deg);
+  }
+  35% {
+    transform: rotate(-3deg);
+  }
+  37% {
+    transform: rotate(3deg);
+  }
+  40% {
+    transform: rotate(-3deg);
+  }
+  42% {
+    transform: translateX(1px) rotate(1deg);
+  }
+  45% {
+    transform: translateX(-2px);
+  }
+  50% {
+    transform: translateX(-1px);
+  }
+  52% {
+    transform: rotate(-1deg);
+  }
+  55% {
+    transform: translateX(-2px) scale(1.03) rotate(4deg);
+  }
+  57% {
+    transform: rotate(-1deg);
+  }
+  60% {
+    transform: rotate(-4deg);
+  }
+  62% {
+    transform: rotate(4deg);
+  }
+  64% {
+    transform: rotate(-2deg);
+  }
+  75% {
+    transform: translateX(2px) rotate(-3deg);
+  }
+  80% {
+    transform: rotate(1deg);
+  }
+  85% {
+    transform: rotate(-1deg);
+  }
+  90% {
+    transform: rotate(3deg);
+  }
+  92% {
+    transform: rotate(-3deg);
+  }
+  95% {
+    transform: rotate(1deg);
+  }
+  96% {
+    transform: rotate(-deg);
+  }
+  97% {
+    transform: rotate(1deg);
+  }
+  98% {
+    transform: rotate(-deg);
+  }
+  100% {
+    transform: translateX(0) rotate(2deg);
+  }
 }
 
 .charm-button:nth-child(20n + 11),
@@ -30,7 +130,7 @@
 .charm-button:nth-child(20n + 18),
 .charm-button:nth-child(20n + 19),
 .charm-button:nth-child(20n + 20) {
-  transform: translateX(2rem);
+  transform: translateX(2.5rem);
 }
 
 @keyframes appIn {
@@ -345,21 +445,69 @@ h3 {
   max-width: 400px;
 }
 
-@media screen and (max-width: 740px) {
+@media screen and (max-width: 770px) {
   .charms-container {
-    overflow-x: auto;
+    grid-template-columns: repeat(5, 6rem);
+  }
+
+  .charm-button:nth-child(20n + 11),
+  .charm-button:nth-child(20n + 12),
+  .charm-button:nth-child(20n + 13),
+  .charm-button:nth-child(20n + 14),
+  .charm-button:nth-child(20n + 15),
+  .charm-button:nth-child(20n + 16),
+  .charm-button:nth-child(20n + 17),
+  .charm-button:nth-child(20n + 18),
+  .charm-button:nth-child(20n + 19),
+  .charm-button:nth-child(20n + 20) {
+    transform: translateX(0);
+  }
+
+  .charm-button:nth-child(10n + 6),
+  .charm-button:nth-child(10n + 7),
+  .charm-button:nth-child(10n + 8),
+  .charm-button:nth-child(10n + 9),
+  .charm-button:nth-child(10n + 10) {
+    transform: translateX(3.5rem);
   }
   .charm-button {
-    --size: 2rem;
+    --size: 4rem;
     flex-shrink: 1;
     padding: 0.25rem;
+  }
+  #app {
+    grid-template-columns: 1fr;
   }
 }
 
 @media screen and (max-width: 600px) {
   .charm-button {
-    --size: 1.5rem;
-    padding: 0.15rem;
+    --size: 2rem;
+  }
+
+  .charm-button:nth-child(10n + 6),
+  .charm-button:nth-child(10n + 7),
+  .charm-button:nth-child(10n + 8),
+  .charm-button:nth-child(10n + 9),
+  .charm-button:nth-child(10n + 10) {
+    transform: translateX(3rem);
+  }
+
+  .subgrid {
+    grid-template-columns: 1fr;
+  }
+}
+@media screen and (max-width: 550px) {
+  .charms-container {
+    grid-template-columns: repeat(5, 5rem);
+  }
+
+  .charm-button:nth-child(10n + 6),
+  .charm-button:nth-child(10n + 7),
+  .charm-button:nth-child(10n + 8),
+  .charm-button:nth-child(10n + 9),
+  .charm-button:nth-child(10n + 10) {
+    transform: translateX(2rem);
   }
 }
 

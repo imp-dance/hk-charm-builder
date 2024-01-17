@@ -335,10 +335,10 @@ export const charm_synergies = {
     description: "Increases the spore cloud radius by 35%.",
     charms: ["deep_focus", "spore_shroom"],
   },
-  jonis_blessing_lifeblood_heart: {
-    name: "Joni's Blessing + Lifeblood Heart",
+  jonis_blessing_hiveblood: {
+    name: "Joni's Blessing + Hiveblood",
     description:
-      "Hiveblood regenerates Lifeblood Masks granted directly by Joni's Blessing, though it takes twice as long (20 seconds). Changes the visuals of the Knight's Masks. Hiveblood Jonis Blessing Mask",
+      "Hiveblood can regenerate Lifeblood Masks granted by Joni's Blessing, though it takes twice as long (20 seconds).\n(Hiveblood does not affect Lifeblood Masks not directly gained through Joni's Blessing.)",
     charms: ["jonis_blessing", "lifeblood_heart"],
   },
   grubsong_grubberflys_elegy: {

@@ -105,12 +105,14 @@ function App() {
             }
           }}
         >
-          {selectedCharms.map((charm) => (
+          {selectedCharms.map((charm, i) => (
             <CharmButton
               onClick={() => removeCharm(charm)}
               onMouseDown={() => setDragItem(charm)}
               key={charm}
               charm={charm}
+              overcharmed={overcharmed}
+              index={i}
               style={
                 dragItem === charm
                   ? {

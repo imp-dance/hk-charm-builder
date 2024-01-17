@@ -1,5 +1,5 @@
 import { clsx } from "clsx";
-import { useState } from "react";
+import { CSSProperties, useState } from "react";
 import ReactDOM from "react-dom";
 import { usePopper } from "react-popper";
 import { charms } from "./charms";
@@ -13,6 +13,8 @@ export function CharmButton(props: {
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) => void;
   style?: React.CSSProperties;
+  overcharmed?: boolean;
+  index?: number;
 }) {
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [referenceElement, setReferenceElement] =
@@ -39,9 +41,15 @@ export function CharmButton(props: {
         className={clsx("charm-button")}
         onMouseDown={props.onMouseDown}
         onMouseUp={props.onMouseUp}
-        style={props.style}
+        style={
+          {
+            ...props.style,
+            "--charm-index": props.index,
+          } as CSSProperties
+        }
         onMouseOver={() => setTooltipVisible(true)}
         onMouseLeave={() => setTooltipVisible(false)}
+        data-overcharmed={props.overcharmed ?? undefined}
       >
         <img
           src={`./charms/${props.charm}.png`}
