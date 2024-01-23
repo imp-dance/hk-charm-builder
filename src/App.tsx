@@ -202,6 +202,32 @@ function App() {
       </Stack>
       <div className="subgrid">
         <Section title="Build info">
+          {overcharmed && (
+            <div className="charm-info">
+              <div className="img" />
+              <div>
+                <header>
+                  <h3>Overcharmed</h3>
+                  <div className="charm-cost">
+                    {Array.from({
+                      length:
+                        currentNotchCost > 11
+                          ? currentNotchCost - 11
+                          : 0,
+                    }).map((_, i) => (
+                      <div
+                        className="charm-dot overcharm"
+                        key={i}
+                      />
+                    ))}
+                  </div>
+                </header>
+                <div className="charm-description">
+                  Take double damage, but get more charm notches.
+                </div>{" "}
+              </div>
+            </div>
+          )}
           {selectedCharms.map((charm) => (
             <div key={charm} className="charm-info">
               <img src={`./charms/${charm}.png`} />
@@ -216,13 +242,13 @@ function App() {
                     ))}
                   </div>
                 </header>
-                <p>
+                <div className="charm-description">
                   {charms[charm].description
                     .split("\n")
                     .map((line) => (
                       <p>{line}</p>
                     ))}
-                </p>{" "}
+                </div>
               </div>
             </div>
           ))}
